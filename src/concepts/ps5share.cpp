@@ -847,8 +847,10 @@ class ShareHub final : public app::Concept
                      kCyan, gfx::Align::center);
             ui::text(list, fonts.regular, fonts.regular.font->fit(cap.name, 20, kTileW),
                      tile.x, tile.y + tile.h + 30, 20, kInk);
-            ui::text(list, fonts.regular, cap.meta.c_str(), tile.x, tile.y + tile.h + 56, 20,
-                     kMuted);
+            const std::string meta_fit =
+                fonts.regular.font->fit(cap.meta.c_str(), 20, kTileW + kTileGapX - 4);
+            ui::text(list, fonts.regular, meta_fit.c_str(), tile.x, tile.y + tile.h + 56,
+                     20, kMuted);
             if (cap.preview_failed)
                 ui::text(list, fonts.regular, "No preview", tile.x, tile.y + tile.h + 82,
                          20, kMuted);

@@ -123,7 +123,7 @@ const char* caBundlePath() {
 }
 constexpr const char* kUserAgent =
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
-constexpr const char* kBuildTag = "fw-hub31";
+constexpr const char* kBuildTag = "fw-hub32";
 /* Pin TLS 1.2 exactly: no post-handshake ticket/key-update reads mid-transfer. */
 constexpr long kTlsVersion = CURL_SSLVERSION_TLSv1_2 | CURL_SSLVERSION_MAX_TLSv1_2;
 
