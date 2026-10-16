@@ -707,6 +707,14 @@ class ShareHub final : public app::Concept
         feedback.play(audio::Cue::launch);
     }
 
+    // The banner and rail only claim a Discord link when a webhook URL
+    // is actually stored.
+    bool discord_linked() const
+    {
+        return context_.share_settings != nullptr &&
+               share::is_allowed_webhook_url(context_.share_settings->webhook_url);
+    }
+
     void draw_banner(gfx::DrawList &list) const
     {
         const ui::Fonts &fonts = context_.fonts;
@@ -714,12 +722,16 @@ class ShareHub final : public app::Concept
         ui::text(list, fonts.display, "PS5 SHARE HUB", kSide + 110, 108, 54, kInk);
         ui::text(list, fonts.semibold, "CAPTURE \xC2\xB7 SHARE \xC2\xB7 DISCORD", kSide + 112,
                  140, 19, kCyan, gfx::Align::left, 3.0f);
+        const bool linked = discord_linked();
+        const Color accent = linked ? kGood : kMuted;
         const Rect pill{1420, 52, 460, 60};
         list.rounded_rect(pill, 30, Color::rgb(0x0d1530, 0.92f));
-        list.bordered_rect(pill, 30, Color::rgb(0x000000, 0.0f), 2, kGood.with_alpha(0.7f));
-        list.circle(pill.x + 34, pill.cy(), 9, kGood);
-        ui::text(list, fonts.semibold, "Discord \xC2\xB7 Connected", pill.x + 54, pill.cy() + 9,
-                 24, kInk);
+        list.bordered_rect(pill, 30, Color::rgb(0x000000, 0.0f), 2,
+                           accent.with_alpha(0.7f));
+        list.circle(pill.x + 34, pill.cy(), 9, accent);
+        ui::text(list, fonts.semibold,
+                 linked ? "Discord \xC2\xB7 Connected" : "Discord \xC2\xB7 Not linked",
+                 pill.x + 54, pill.cy() + 9, 24, kInk);
     }
 
     void draw_rail(gfx::DrawList &list) const
@@ -757,8 +769,11 @@ class ShareHub final : public app::Concept
         }
         ui::text(list, fonts.semibold, "DISCORD", kRailX + 4, 830, 18, kMuted,
                  gfx::Align::left, 3.0f);
-        list.circle(kRailX + 12, 862, 8, kGood);
-        ui::text(list, fonts.semibold, "Connected", kRailX + 30, 871, 24, kGood);
+        const bool linked = discord_linked();
+        const Color accent = linked ? kGood : kMuted;
+        list.circle(kRailX + 12, 862, 8, accent);
+        ui::text(list, fonts.semibold, linked ? "Connected" : "Not linked", kRailX + 30,
+                 871, 24, accent);
     }
 
     void draw_grid(gfx::DrawList &list) const

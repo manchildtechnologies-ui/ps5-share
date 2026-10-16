@@ -22,3 +22,5 @@ dist/
 *.sprx
 *.prx
 *.pkg
+
+tools/ps5share-installer/out/
