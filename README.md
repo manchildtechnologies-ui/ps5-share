@@ -27,11 +27,18 @@ clips preview as thumbnails plus length/resolution.
 
 ## Install
 
-1. Build the `PPSA99992` folder (below).
-2. Copy it onto the console over any previous install (your saved webhook
-   lives outside the app folder, so it survives).
-3. Launch it from the Media section, open **Settings**, and add your Discord
-   webhook URL.
+Pick one:
+
+- **Installer payload** (`ps5-share-installer.elf` on the release page):
+  send it like any payload. It writes the app to `/data/homebrew` and
+  tells you when it is done. Safe to run over an existing install; your
+  saved webhook is kept.
+- **By hand**: extract the release ZIP and copy the `PPSA99992` folder to
+  `/data/homebrew` on the console (your saved webhook lives outside the
+  app folder, so it survives).
+
+Then launch PS5 Share from the Media section, open **Settings**, and add
+your Discord webhook URL.
 
 Get a webhook URL in Discord via Channel Settings → Integrations →
 Webhooks → New Webhook → Copy Webhook URL.

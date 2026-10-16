@@ -28,9 +28,14 @@ struct Blob
 extern const struct Blob kFiles[];
 extern const unsigned long kFileCount;
 
+static unsigned toast_seq = 1;
+
+// Full InteractiveToastTemplateB shape, mirroring the payload SDK's notify
+// sample: trimmed payloads are dropped silently, and the call needs the
+// logged flag set.
 static void toast(const char *body, const char *sub)
 {
-    char payload[2048];
+    char payload[3072];
     snprintf(payload, sizeof(payload),
              "{\n"
              "  \"rawData\": {\n"
@@ -41,17 +46,40 @@ static void toast(const char *body, const char *sub)
              "    \"isImmediate\": true,\n"
              "    \"priority\": 100,\n"
              "    \"viewData\": {\n"
+             "      \"icon\": {\n"
+             "        \"type\": \"Predefined\",\n"
+             "        \"parameters\": {\n"
+             "          \"icon\": \"download\"\n"
+             "        }\n"
+             "      },\n"
              "      \"message\": {\n"
              "        \"body\": \"%s\"\n"
              "      },\n"
              "      \"subMessage\": {\n"
              "        \"body\": \"%s\"\n"
              "      }\n"
+             "    },\n"
+             "    \"platformViews\": {\n"
+             "      \"previewDisabled\": {\n"
+             "        \"viewData\": {\n"
+             "          \"icon\": {\n"
+             "            \"type\": \"Predefined\",\n"
+             "            \"parameters\": {\n"
+             "              \"icon\": \"download\"\n"
+             "            }\n"
+             "          },\n"
+             "          \"message\": {\n"
+             "            \"body\": \"%s\"\n"
+             "          }\n"
+             "        }\n"
+             "      }\n"
              "    }\n"
-             "  }\n"
+             "  },\n"
+             "  \"createdDateTime\": \"2026-10-16T00:00:00.000Z\",\n"
+             "  \"localNotificationId\": \"%u\"\n"
              "}\n",
-             body, sub);
-    sceNotificationSend(SCE_NOTIFICATION_LOCAL_USER_ID_SYSTEM, false, payload);
+             body, sub, body, toast_seq++);
+    sceNotificationSend(SCE_NOTIFICATION_LOCAL_USER_ID_SYSTEM, true, payload);
 }
 
 // mkdir -p for the directory part of DEST_ROOT + rel.
@@ -102,12 +130,27 @@ static int write_file(const char *rel, const unsigned char *data, unsigned long 
 int main(void)
 {
     char sub[256];
-    snprintf(sub, sizeof(sub), "Created by Vintendo \xC2\xB7 %lu files to %s", kFileCount,
-             DEST_ROOT);
-    toast("Installing PS5 Share Hub", sub);
+    // The app icon goes down first: both toasts reference it.
+    for (unsigned long i = 0; i < kFileCount; ++i)
+    {
+        if (strcmp(kFiles[i].path, "sce_sys/icon0.png") != 0)
+            continue;
+        const unsigned long size =
+            (unsigned long)(kFiles[i].end - kFiles[i].data);
+        if (write_file(kFiles[i].path, kFiles[i].data, size) != 0)
+        {
+            snprintf(sub, sizeof(sub), "failed at %s (errno %d)", kFiles[i].path,
+                     errno);
+            toast("PS5 Share install failed", sub);
+            return 1;
+        }
+    }
+    toast("Installing PS5 Share Hub", "Created by Vintendo");
 
     for (unsigned long i = 0; i < kFileCount; ++i)
     {
+        if (strcmp(kFiles[i].path, "sce_sys/icon0.png") == 0)
+            continue; // already written above
         const unsigned long size =
             (unsigned long)(kFiles[i].end - kFiles[i].data);
         if (write_file(kFiles[i].path, kFiles[i].data, size) != 0)
@@ -119,7 +162,6 @@ int main(void)
         }
     }
 
-    toast("PS5 Share installed",
-          "Created by Vintendo \xC2\xB7 Open it from the Media section");
+    toast("PS5 Share installed", "Open it from the Media section");
     return 0;
 }
